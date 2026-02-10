@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Receipt with Add Row</title>
+    <title>Dynamic Receipt with Add/Delete Row</title>
     <style>
         body {
             background-color: #f0f0f0;
@@ -28,6 +28,7 @@
             gap: 10px;
             position: sticky;
             top: 10px;
+            z-index: 100;
         }
         
         button {
@@ -44,6 +45,21 @@
         
         .print-btn { background: #2ecc71; color: white; }
         .print-btn:hover { background: #27ae60; }
+
+        /* Delete Button Style */
+        .del-btn {
+            background: #ff7675;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            line-height: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
 
         /* Receipt Text Styles */
         .logo { font-size: 60px; font-weight: bold; text-align: center; margin-bottom: 10px; }
@@ -71,7 +87,7 @@
 
         /* Print Settings */
         @media print {
-            .controls { display: none; }
+            .controls, .del-btn, .action-col { display: none !important; }
             body { background: none; padding: 0; }
             .receipt { box-shadow: none; width: 100%; padding: 0; }
             @page { size: 80mm auto; margin: 0; }
@@ -108,8 +124,9 @@
             <thead>
                 <tr>
                     <th style="width: 15%;">QTY</th>
-                    <th style="width: 55%;">PARTICULARS</th>
-                    <th class="right" style="width: 30%;">AMOUNT</th>
+                    <th style="width: 45%;">PARTICULARS</th>
+                    <th class="right" style="width: 25%;">AMOUNT</th>
+                    <th class="action-col" style="width: 15%;"></th>
                 </tr>
             </thead>
             <tbody id="receipt-body">
@@ -117,12 +134,14 @@
                     <td class="qty" contenteditable="true" oninput="updateTotal()">1</td>
                     <td contenteditable="true">Sample Item</td>
                     <td class="amount right" contenteditable="true" oninput="updateTotal()">0.00</td>
+                    <td class="action-col right"><button class="del-btn" onclick="deleteRow(this)">x</button></td>
                 </tr>
             </tbody>
             <tfoot>
                 <tr class="total-row">
                     <td colspan="2" style="padding: 10px 0;">TOTAL AMOUNT</td>
                     <td class="right" id="grandTotal" style="padding: 10px 0;">0.00</td>
+                    <td class="action-col"></td>
                 </tr>
             </tfoot>
         </table>
@@ -147,10 +166,22 @@
                 <td class="qty" contenteditable="true" oninput="updateTotal()">1</td>
                 <td contenteditable="true">New Item</td>
                 <td class="amount right" contenteditable="true" oninput="updateTotal()">0.00</td>
+                <td class="action-col right"><button class="del-btn" onclick="deleteRow(this)">x</button></td>
             `;
             
             tbody.appendChild(newRow);
             updateTotal();
+        }
+
+        // Function para mag-DELETE ng row
+        function deleteRow(btn) {
+            const rowCount = document.querySelectorAll('#receipt-body tr').length;
+            if(rowCount > 1) {
+                btn.closest('tr').remove();
+                updateTotal();
+            } else {
+                alert("Dapat may matirang kahit isang item.");
+            }
         }
 
         // Function para i-compute ang TOTAL
