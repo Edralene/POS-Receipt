@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Printable Receipt</title>
+    <title>Dynamic Receipt with Add Row</title>
     <style>
-        /* BASE STYLES */
         body {
             background-color: #f0f0f0;
             font-family: 'Courier New', Courier, monospace;
@@ -15,175 +14,162 @@
             padding: 20px;
         }
 
-        /* RECEIPT BOX */
         .receipt {
             background-color: white;
-            width: 80mm; /* Standard width ng thermal printer paper */
+            width: 80mm;
             padding: 10mm;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            color: #000;
         }
 
-        .logo {
-            font-size: 60px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1;
-            margin-bottom: 10px;
-        }
-
-        .header-text {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .header-text h2 { margin: 0; font-size: 18px; }
-        .header-text p { margin: 2px 0; font-size: 11px; }
-
-        hr {
-            border: none;
-            border-top: 1px dashed #000;
-            margin: 10px 0;
-        }
-
-        .details {
-            font-size: 12px;
-            margin-bottom: 15px;
-        }
-
-        /* TABLE STYLES */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        th {
-            text-align: left;
-            border-bottom: 1px solid #000;
-            padding-bottom: 5px;
-        }
-
-        td { padding: 5px 0; }
-        
-        .right { text-align: right; }
-        .center { text-align: center; }
-        
-        .total-row {
-            font-weight: bold;
-            border-top: 1px solid #000;
-            border-bottom: 1px solid #000;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 10px;
-            font-style: italic;
-        }
-
-        /* PRINT BUTTON */
-        .print-btn {
+        /* Buttons Style */
+        .controls {
             margin-bottom: 20px;
-            padding: 10px 20px;
-            background: #2ecc71;
-            color: white;
+            display: flex;
+            gap: 10px;
+            position: sticky;
+            top: 10px;
+        }
+        
+        button {
+            padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            font-family: Arial, sans-serif;
         }
 
-        /* PRINT SETTINGS - Dito nangyayari ang magic */
+        .add-btn { background: #3498db; color: white; }
+        .add-btn:hover { background: #2980b9; }
+        
+        .print-btn { background: #2ecc71; color: white; }
+        .print-btn:hover { background: #27ae60; }
+
+        /* Receipt Text Styles */
+        .logo { font-size: 60px; font-weight: bold; text-align: center; margin-bottom: 10px; }
+        .header-text { text-align: center; font-size: 11px; margin-bottom: 15px; }
+        .header-text h2 { margin: 0; font-size: 18px; }
+
+        hr { border: none; border-top: 1px dashed #000; margin: 10px 0; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { text-align: left; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        td { padding: 6px 0; vertical-align: top; }
+        
+        .right { text-align: right; }
+        .center { text-align: center; }
+
+        [contenteditable="true"]:focus {
+            background-color: #fffde7;
+            outline: 1px solid #f1c40f;
+        }
+
+        .total-row {
+            font-weight: bold;
+            border-top: 2px solid #000;
+        }
+
+        /* Print Settings */
         @media print {
+            .controls { display: none; }
             body { background: none; padding: 0; }
-            .print-btn { display: none; } /* Hindi masasama ang button sa print */
-            .receipt {
-                box-shadow: none;
-                width: 100%;
-                padding: 0;
-            }
-            @page {
-                size: 80mm auto; /* Sinusundan ang haba ng content */
-                margin: 0;
-            }
+            .receipt { box-shadow: none; width: 100%; padding: 0; }
+            @page { size: 80mm auto; margin: 0; }
         }
     </style>
 </head>
 <body>
 
-    <button class="print-btn" onclick="window.print()">PRINT RECEIPT</button>
+    <div class="controls">
+        <button class="add-btn" onclick="addRow()">+ ADD ROW (Dagdag Item)</button>
+        <button class="print-btn" onclick="window.print()">PRINT RECEIPT</button>
+    </div>
 
     <div class="receipt">
-        <div class="logo">B</div>
+        <div class="logo" contenteditable="true">ERB</div>
         
         <div class="header-text">
-            <h2>ERB Consumer Goods Retailing</h2>
-            <p>Edralene Balase</p>
-            <p>532 9de Febrero St. Mandaluyong City</p>
+            <h2 contenteditable="true">ERB Consumer Goods Retailing</h2>
+            <p contenteditable="true">Edralene Balase</p>
+            <p contenteditable="true">532 9de Febrero St. Mandaluyong City</p>
         </div>
 
         <hr>
 
-        <div class="details">
-            <p><strong>Acknoledgement No:</strong> 819-5541924</p>
+        <div style="font-size: 11px; margin-bottom: 10px;">
+            <p><strong>Ack No:</strong> <span contenteditable="true">819-5541924</span></p>
             <div style="display: flex; justify-content: space-between;">
-                <span><strong>Date:</strong></span>
-                <span>RECEIPT</span>
+                <span><strong>Date:</strong> <span id="dateNow" contenteditable="true"></span></span>
+                <span contenteditable="true">OFFICIAL RECEIPT</span>
             </div>
-            <p>Edralene Balase </p>
         </div>
 
         <table>
             <thead>
                 <tr>
-                    <th>Item:</th>
-                    <th class="center">QTY</th>
-                    <th class="right">Total</th>
-                    
+                    <th style="width: 15%;">QTY</th>
+                    <th style="width: 55%;">PARTICULARS</th>
+                    <th class="right" style="width: 30%;">AMOUNT</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="receipt-body">
                 <tr>
-                    <td>INuze dtrorid</td>
-                    <td class="center">0</td>
-                    <td class="right">$5.00</td>
-                </tr>
-                <tr>
-                    <td>Qutary</td>
-                    <td class="center">0</td>
-                    <td class="right">$9.00</td>
-                </tr>
-                <tr class="total-row">
-                    <td>Item</td>
-                    <td class="center">Stotate</td>
-                    <td class="right">$6.00</td>
-                </tr>
-                <tr>
-                    <td>Phencort Trse Durats</td>
-                    <td class="center">10</td>
-                    <td class="right">$6.00</td>
-                </tr>
-                <tr>
-                    <td>Sotal</td>
-                    <td class="center">20</td>
-                    <td class="right">$1.00</td>
-                </tr>
-                <tr class="total-row">
-                    <td>Feclate: Trsw Durots</td>
-                    <td class="center">100</td>
-                    <td class="right">$6.00</td>
+                    <td class="qty" contenteditable="true" oninput="updateTotal()">1</td>
+                    <td contenteditable="true">Sample Item</td>
+                    <td class="amount right" contenteditable="true" oninput="updateTotal()">0.00</td>
                 </tr>
             </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2" style="padding: 10px 0;">TOTAL AMOUNT</td>
+                    <td class="right" id="grandTotal" style="padding: 10px 0;">0.00</td>
+                </tr>
+            </tfoot>
         </table>
 
-        <hr>
-
-        <div class="footer">
-            <p>Youm poit out Creative form ntare fort c lowtine $3429</p>
-            <p>Catetire /54025</p>
-            <p>Purt elrees Chicdid hrem tora</p>
+        <div style="margin-top: 20px; font-size: 10px; text-align: center;" contenteditable="true">
+            <p>*** Thank You / Salamat! ***</p>
+            <p>This serves as your proof of purchase.</p>
         </div>
     </div>
+
+    <script>
+        // Set date
+        const d = new Date();
+        document.getElementById('dateNow').innerText = d.toLocaleDateString();
+
+        // Function para mag-ADD ng bagong row
+        function addRow() {
+            const tbody = document.getElementById('receipt-body');
+            const newRow = document.createElement('tr');
+            
+            newRow.innerHTML = `
+                <td class="qty" contenteditable="true" oninput="updateTotal()">1</td>
+                <td contenteditable="true">New Item</td>
+                <td class="amount right" contenteditable="true" oninput="updateTotal()">0.00</td>
+            `;
+            
+            tbody.appendChild(newRow);
+            updateTotal();
+        }
+
+        // Function para i-compute ang TOTAL
+        function updateTotal() {
+            let total = 0;
+            const rows = document.querySelectorAll('#receipt-body tr');
+            
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').innerText) || 0;
+                const amount = parseFloat(row.querySelector('.amount').innerText.replace(/,/g, '')) || 0;
+                total += (qty * amount);
+            });
+
+            document.getElementById('grandTotal').innerText = total.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    </script>
 
 </body>
 </html>
